@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { getAICoachResponse } from "../services/ai.service.js";
+import { orchestrate } from "../services/aiOrchestrator.service.js";
 import { sendSuccess, sendError } from "../utils/apiResponse.js";
 import { HTTP_STATUS } from "../constants/http.js";
 import prisma from "../config/db.js";
@@ -29,18 +29,18 @@ export const chat = async (req: Request, res: Response, next: NextFunction) => {
     const { message } = req.body;
     const history: Message[] = (existingSession?.messages as Message[]) ?? [];
 
-    const { reply, parsed } = await getAICoachResponse(
-      message,
-      profile.fitnessGoal,
-      { age: profile.age, weight: profile.weight, weightUnit: profile.weightUnit, height: profile.height },
-      history,
-      recentWorkouts
-    );
+    const result = await orchestrate(message, {
+      userId,
+      fitnessGoal: profile.fitnessGoal,
+      profile: { age: profile.age, weight: profile.weight, weightUnit: profile.weightUnit, height: profile.height },
+      recentWorkouts,
+      conversationHistory: history,
+    });
 
     const updatedMessages: Message[] = [
       ...history,
       { role: "user", content: message },
-      { role: "assistant", content: reply },
+      { role: "assistant", content: result.reply },
     ];
 
     await prisma.aIChatSession.upsert({
@@ -49,7 +49,7 @@ export const chat = async (req: Request, res: Response, next: NextFunction) => {
       create: { userId, messages: updatedMessages },
     });
 
-    sendSuccess(res, { reply, parsed, goal: profile.fitnessGoal });
+    sendSuccess(res, result);
   } catch (err) {
     next(err);
   }

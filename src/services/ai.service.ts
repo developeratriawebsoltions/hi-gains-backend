@@ -79,9 +79,9 @@ You MUST respond with a valid JSON object in this exact format:
   ];
 
   const response = await groq.chat.completions.create({
-    model: "qwen/qwen3.8-27b",
+    model: "openai/gpt-oss-120b",
     messages,
-    max_tokens: 600,
+    max_tokens: 1024,
     response_format: { type: "json_object" },
   });
 

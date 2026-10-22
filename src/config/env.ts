@@ -7,4 +7,6 @@ export const env = {
   DATABASE_URL: process.env["DATABASE_URL"] ?? "",
   JWT_SECRET: process.env["JWT_SECRET"] ?? "",
   GROQ_API_KEY: process.env["GROQ_API_KEY"] ?? "",
+  OPENAI_API_KEY: process.env["OPENAI_API_KEY"] ?? "",
+  OPENAI_TTS_MODEL: process.env["OPENAI_TTS_MODEL"] ?? "tts-1",
 };
